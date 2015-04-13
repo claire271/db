@@ -93,6 +93,34 @@ class Table {
 		fclose($fp);
 		return $row;
 	}
+
+	/*
+	 * Gets all the rows in this table
+	 */
+	public function getRows() {
+		$fp = fopen(DB_ROOT . $this->name . "/count","r+");
+		flock($fp,LOCK_EX);
+		$count = (int)fread($fp,10);
+
+		$rows = [];
+
+		for($i = 0;$i < $count;$i++) {
+			if(!file_exists(DB_ROOT . $this->name . "/" . $i)) {
+				continue;
+			}
+
+			$row = new Row();
+			$row->table = $this;
+			$row->index = $i;
+			$row->read();
+			
+			array_push($rows,$row);
+		}
+
+		flock($fp,LOCK_UN);	
+		fclose($fp);
+		return $rows;
+	}
 		
 	/*
 	 * Tests to see if the table given by $name exists
@@ -169,6 +197,9 @@ class Table {
 			$row->c = "test";
 			$row->read();
 			print_r($row);
+
+			$rows = $table->getRows();
+			print_r($rows);
 			
 			?>
 		</pre>
