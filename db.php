@@ -11,14 +11,32 @@ class Row {
 
 	/*
 	 * Writes the contents of this row to the files
-	 * Always writes, even if there are no changes.
 	 */
 	public function write() {
-		foreach($field as $this->table->fields) {
-			
+		$fp = fopen(DB_ROOT . $this->table->name . "/" . $this->index . "/lockfile","r+");
+		flock($fp,LOCK_EX);
+
+		foreach($this->table->fields as $field) {
+			file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,$this->$field,LOCK_EX);
 		}
-		//file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index ,,LOCK_EX);
-		//chmod(DB_ROOT . $this->name . "/schema.txt",0664);
+
+		flock($fp,LOCK_UN);	
+		fclose($fp);
+	}
+
+	/*
+	 * Reads the contents of the row from the files
+	 */
+	public function read() {
+		$fp = fopen(DB_ROOT . $this->table->name . "/" . $this->index . "/lockfile","r+");
+		flock($fp,LOCK_EX);
+		
+		foreach($this->table->fields as $field) {
+			$this->$field = file_get_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,LOCK_EX);
+		}
+
+		flock($fp,LOCK_UN);	
+		fclose($fp);
 	}
 }
 
@@ -30,11 +48,10 @@ class Table {
 
 	/*
 	 * Write the schema out to the file
-	 * Always writes, even if there are no changes.
 	 */
 	public function writeSchema() {
-		file_put_contents(DB_ROOT . $this->name . "/schema.txt",implode("\n",$this->fields),LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/schema.txt",0664);
+		file_put_contents(DB_ROOT . $this->name . "/schema",implode("\n",$this->fields),LOCK_EX);
+		chmod(DB_ROOT . $this->name . "/schema",0664);
 	}
 
 	/*
@@ -42,8 +59,8 @@ class Table {
 	 * Does not delete all records, only resets the counter.
 	 */
 	public function resetCounter() {
-		file_put_contents(DB_ROOT . $this->name . "/count.txt","0",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/count.txt",0664);
+		file_put_contents(DB_ROOT . $this->name . "/count","0",LOCK_EX);
+		chmod(DB_ROOT . $this->name . "/count",0664);
 	}
 
 	/*
@@ -51,12 +68,15 @@ class Table {
 	 * Increments the counter and creates the directory.
 	 */
 	public function createRow() {
-		$fp = fopen(DB_ROOT . $this->name . "/count.txt","r+");
+		$fp = fopen(DB_ROOT . $this->name . "/count","r+");
 		flock($fp,LOCK_EX);
 		$count = (int)fread($fp,10);
 
 		mkdir(DB_ROOT . $this->name . "/" . $count);
 		chmod(DB_ROOT . $this->name . "/" . $count,0775);
+
+		file_put_contents(DB_ROOT . $this->name . "/" . $count . "/lockfile","",LOCK_EX);
+		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0775);
 
 		$row = new Row();
 		$row->table = $this;
@@ -113,7 +133,7 @@ class Table {
 
 		$table = new Table();
 		$table->name = $name;
-		$table->fields = explode("\n",file_get_contents(DB_ROOT . $name . "/schema.txt",LOCK_SH));
+		$table->fields = explode("\n",file_get_contents(DB_ROOT . $name . "/schema",LOCK_EX));
 
 		return $table;
 	}
@@ -130,10 +150,24 @@ class Table {
 	<body>
 		<pre>
 			<?php
-			$table = Table::open("test");
-			//$table = Table::create("test",["1","2","3"]);
+			if(Table::exists("test")) {
+				$table = Table::open("test");
+			}
+			else {
+				$table = Table::create("test",["a","b","c"]);
+			}
 			print_r($table);
 			$row = $table->createRow();
+			$row->a = "HI1";
+			$row->b = "HI2";
+			$row->c = "HI3";
+			print_r($row);
+			$row->write();
+
+			$row->a = "test";
+			$row->b = "test";
+			$row->c = "test";
+			$row->read();
 			print_r($row);
 			
 			?>
