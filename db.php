@@ -3,6 +3,25 @@
 define( "ROOT_PATH", $_SERVER['DOCUMENT_ROOT']);
 define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "db/");
 
+class Row {
+	public $index = null;
+	public $table = null;
+
+	public function __construct() {}
+
+	/*
+	 * Writes the contents of this row to the files
+	 * Always writes, even if there are no changes.
+	 */
+	public function write() {
+		foreach($field as $this->table->fields) {
+			
+		}
+		//file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index ,,LOCK_EX);
+		//chmod(DB_ROOT . $this->name . "/schema.txt",0664);
+	}
+}
+
 class Table {
 	public $name = null;
 	public $fields = null;
@@ -14,10 +33,47 @@ class Table {
 	 * Always writes, even if there are no changes.
 	 */
 	public function writeSchema() {
-		file_put_contents(DB_ROOT . $this->name . "/schema.txt",implode("\n",$this->fields));
+		file_put_contents(DB_ROOT . $this->name . "/schema.txt",implode("\n",$this->fields),LOCK_EX);
 		chmod(DB_ROOT . $this->name . "/schema.txt",0664);
 	}
-	
+
+	/*
+	 * Resets the index counter
+	 * Does not delete all records, only resets the counter.
+	 */
+	public function resetCounter() {
+		file_put_contents(DB_ROOT . $this->name . "/count.txt","0",LOCK_EX);
+		chmod(DB_ROOT . $this->name . "/count.txt",0664);
+	}
+
+	/*
+	 * Creates a new row in this table
+	 * Increments the counter and creates the directory.
+	 */
+	public function createRow() {
+		$fp = fopen(DB_ROOT . $this->name . "/count.txt","r+");
+		flock($fp,LOCK_EX);
+		$count = (int)fread($fp,10);
+
+		mkdir(DB_ROOT . $this->name . "/" . $count);
+		chmod(DB_ROOT . $this->name . "/" . $count,0775);
+
+		$row = new Row();
+		$row->table = $this;
+		$row->index = $count;
+
+		foreach($this->fields as $field) {
+			$row->$field = null;
+		}
+		
+		ftruncate($fp,0);
+		rewind($fp);
+		fwrite($fp,(string)($count + 1));
+		flock($fp,LOCK_UN);	
+		fclose($fp);
+		return $row;
+	}
+		
 	/*
 	 * Tests to see if the table given by $name exists
 	 */
@@ -41,6 +97,7 @@ class Table {
 		$table->name = $name;
 		$table->fields = $fields;
 		$table->writeSchema();
+		$table->resetCounter();
 
 		return $table;
 	}
@@ -56,7 +113,7 @@ class Table {
 
 		$table = new Table();
 		$table->name = $name;
-		$table->fields = explode("\n",file_get_contents(DB_ROOT . $name . "/schema.txt"));
+		$table->fields = explode("\n",file_get_contents(DB_ROOT . $name . "/schema.txt",LOCK_SH));
 
 		return $table;
 	}
@@ -74,7 +131,10 @@ class Table {
 		<pre>
 			<?php
 			$table = Table::open("test");
+			//$table = Table::create("test",["1","2","3"]);
 			print_r($table);
+			$row = $table->createRow();
+			print_r($row);
 			
 			?>
 		</pre>
