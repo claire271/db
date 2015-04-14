@@ -166,38 +166,3 @@ class Table {
 	}
 }
 ?>
-
-<html>
-	<head>
-		<title>PHP DB Control Panel</title>
-	</head>
-	<body>
-		<pre>
-			<?php
-			if(Table::exists("test")) {
-				$table = Table::open("test");
-			}
-			else {
-				$table = Table::create("test",["a","b","c"]);
-			}
-			print_r($table);
-			$row = $table->createRow();
-			$row->a = "HI1";
-			$row->b = "HI2";
-			$row->c = "HI3";
-			print_r($row);
-			$row->write();
-
-			$row->a = "test";
-			$row->b = "test";
-			$row->c = "test";
-			$row->read();
-			print_r($row);
-
-			$rows = $table->getRows();
-			print_r($rows);
-			
-			?>
-		</pre>
-	</body>
-</html>
