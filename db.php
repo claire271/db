@@ -1,6 +1,5 @@
 <?php
 //A db engine written in pure php
-define( "ROOT_PATH", $_SERVER['DOCUMENT_ROOT']);
 define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "db/");
 
 class Row {
@@ -166,11 +165,8 @@ class Table {
 		return $table;
 	}
 }
-
-
-
-
 ?>
+
 <html>
 	<head>
 		<title>PHP DB Control Panel</title>
