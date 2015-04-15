@@ -95,6 +95,18 @@ class Table {
 	}
 
 	/*
+	 * Gets a specific row in this table
+	 */
+	public function getRow($index) {
+		$row = new Row();
+		$row->table = $this;
+		$row->index = $index;
+		$row->read();
+
+		return $row;
+	}
+
+	/*
 	 * Gets all the rows in this table
 	 */
 	public function getRows() {
@@ -109,11 +121,7 @@ class Table {
 				continue;
 			}
 
-			$row = new Row();
-			$row->table = $this;
-			$row->index = $i;
-			$row->read();
-			
+			$row = $this->getRow($i);
 			array_push($rows,$row);
 		}
 
@@ -121,7 +129,7 @@ class Table {
 		fclose($fp);
 		return $rows;
 	}
-		
+
 	/*
 	 * Tests to see if the table given by $name exists
 	 */
