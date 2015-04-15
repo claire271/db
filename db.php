@@ -110,7 +110,7 @@ class Table {
 	 * Deletes a specific row in this table
 	 */
 	public function deleteRow($index) {
-		array_map("unlink", glob(DB_ROOT . $this->name . "/" . $index));
+		array_map("unlink", glob(DB_ROOT . $this->name . "/" . $index . "/*"));
 		rmdir(DB_ROOT . $this->name . "/" . $index);
 	}
 
