@@ -17,6 +17,7 @@ class Row {
 
 		foreach($this->table->fields as $field) {
 			file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,$this->$field,LOCK_EX);
+			chmod(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,0664);
 		}
 
 		flock($fp,LOCK_UN);	
@@ -31,7 +32,7 @@ class Row {
 		flock($fp,LOCK_EX);
 		
 		foreach($this->table->fields as $field) {
-			$this->$field = file_get_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,LOCK_EX);
+			$this->$field = rtrim(file_get_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,LOCK_EX));
 		}
 
 		flock($fp,LOCK_UN);	
@@ -75,7 +76,7 @@ class Table {
 		chmod(DB_ROOT . $this->name . "/" . $count,0775);
 
 		file_put_contents(DB_ROOT . $this->name . "/" . $count . "/lockfile","",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0775);
+		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0664);
 
 		$row = new Row();
 		$row->table = $this;
@@ -160,7 +161,7 @@ class Table {
 
 		$table = new Table();
 		$table->name = $name;
-		$table->fields = explode("\n",file_get_contents(DB_ROOT . $name . "/schema",LOCK_EX));
+		$table->fields = explode("\n",rtrim(file_get_contents(DB_ROOT . $name . "/schema",LOCK_EX)));
 
 		return $table;
 	}
