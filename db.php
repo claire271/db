@@ -1,6 +1,6 @@
 <?php
 //A db engine written in pure php
-define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "db/");
+define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "/db/");
 
 class Row {
 	public $index = null;
