@@ -122,7 +122,7 @@ class Table {
 		flock($fp,LOCK_EX);
 		$count = (int)fread($fp,10);
 
-		$rows = [];
+		$rows = array();
 
 		for($i = 0;$i < $count;$i++) {
 			if(!file_exists(DB_ROOT . $this->name . "/" . $i)) {
