@@ -17,7 +17,7 @@ class Row {
 
 		foreach($this->table->fields as $field) {
 			file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,$this->$field,LOCK_EX);
-			chmod(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,0664);
+			chmod(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,0644);
 		}
 
 		flock($fp,LOCK_UN);	
@@ -51,7 +51,7 @@ class Table {
 	 */
 	public function writeSchema() {
 		file_put_contents(DB_ROOT . $this->name . "/schema",implode("\n",$this->fields),LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/schema",0664);
+		chmod(DB_ROOT . $this->name . "/schema",0644);
 	}
 
 	/*
@@ -60,7 +60,7 @@ class Table {
 	 */
 	public function resetCounter() {
 		file_put_contents(DB_ROOT . $this->name . "/count","0",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/count",0664);
+		chmod(DB_ROOT . $this->name . "/count",0644);
 	}
 
 	/*
@@ -73,10 +73,10 @@ class Table {
 		$count = (int)fread($fp,10);
 
 		mkdir(DB_ROOT . $this->name . "/" . $count);
-		chmod(DB_ROOT . $this->name . "/" . $count,0775);
+		chmod(DB_ROOT . $this->name . "/" . $count,0755);
 
 		file_put_contents(DB_ROOT . $this->name . "/" . $count . "/lockfile","",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0664);
+		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0644);
 
 		$row = new Row();
 		$row->table = $this;
@@ -155,7 +155,7 @@ class Table {
 			return false;
 		}
 		mkdir(DB_ROOT . $name);
-		chmod(DB_ROOT . $name,0775);
+		chmod(DB_ROOT . $name,0755);
 
 		$table = new Table();
 		$table->name = $name;
