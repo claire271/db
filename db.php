@@ -2,6 +2,9 @@
 //A db engine written in pure php
 define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "/db/");
 
+define("FILE_PERM",0664);
+define("DIR_PERM",0775);
+
 class Row {
 	public $index = null;
 	public $table = null;
@@ -17,7 +20,7 @@ class Row {
 
 		foreach($this->table->fields as $field) {
 			file_put_contents(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,$this->$field,LOCK_EX);
-			chmod(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,0644);
+			chmod(DB_ROOT . $this->table->name . "/" . $this->index . "/" . $field,FILE_PERM);
 		}
 
 		flock($fp,LOCK_UN);	
@@ -51,7 +54,7 @@ class Table {
 	 */
 	public function writeSchema() {
 		file_put_contents(DB_ROOT . $this->name . "/schema",implode("\n",$this->fields),LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/schema",0644);
+		chmod(DB_ROOT . $this->name . "/schema",FILE_PERM);
 	}
 
 	/*
@@ -60,7 +63,7 @@ class Table {
 	 */
 	public function resetCounter() {
 		file_put_contents(DB_ROOT . $this->name . "/count","0",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/count",0644);
+		chmod(DB_ROOT . $this->name . "/count",FILE_PERM);
 	}
 
 	/*
@@ -73,10 +76,10 @@ class Table {
 		$count = (int)fread($fp,10);
 
 		mkdir(DB_ROOT . $this->name . "/" . $count);
-		chmod(DB_ROOT . $this->name . "/" . $count,0755);
+		chmod(DB_ROOT . $this->name . "/" . $count,DIR_PERM);
 
 		file_put_contents(DB_ROOT . $this->name . "/" . $count . "/lockfile","",LOCK_EX);
-		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",0644);
+		chmod(DB_ROOT . $this->name . "/" . $count . "/lockfile",FILE_PERM);
 
 		$row = new Row();
 		$row->table = $this;
@@ -155,7 +158,7 @@ class Table {
 			return false;
 		}
 		mkdir(DB_ROOT . $name);
-		chmod(DB_ROOT . $name,0755);
+		chmod(DB_ROOT . $name,DIR_PERM);
 
 		$table = new Table();
 		$table->name = $name;
