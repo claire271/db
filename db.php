@@ -2,8 +2,8 @@
 //A db engine written in pure php
 define( "DB_ROOT", $_SERVER['DOCUMENT_ROOT'] . "/db/");
 
-define("FILE_PERM",0664);
-define("DIR_PERM",0775);
+if(!defined("FILE_PERM")) define("FILE_PERM",0664);
+if(!defined("DIR_PERM")) define("DIR_PERM",0775);
 
 class Row {
 	public $index = null;
